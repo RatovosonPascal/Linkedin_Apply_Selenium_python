@@ -176,7 +176,7 @@ try:
                             print(f"Exception inattendue dans la boucle 'Suivant' : {e}")
                             break
 
-                    questions = []
+                    questions = [] # Liste pour stocker les réponses
                     reponses = []  # Liste pour stocker les réponses générées pour chaque question
 
                     try:
