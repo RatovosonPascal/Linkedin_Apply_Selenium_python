@@ -197,7 +197,7 @@ try:
                                 questions.append(question_text)
 
                         if questions:
-                            print(".............. Questions trouvées :")
+                            print("-----------gQuestions trouvées :")
                             for idx, q in enumerate(questions, 1):
                                 print(f"{idx}. {q}")
 
