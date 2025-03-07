@@ -160,7 +160,7 @@ try:
 
                     while True:
                         try:
-                            next_button = WebDriverWait(driver, 5).until(
+                            next_button = WebDriverWait(driver, 30).until(
                                 EC.element_to_be_clickable((By.XPATH, "//span[text()='Suivant']/ancestor::button"))
                             )
                             print("Bouton 'Suivant' trouvé et cliquable")
@@ -176,7 +176,7 @@ try:
                             print(f"Exception inattendue dans la boucle 'Suivant' : {e}")
                             break
 
-                    questions = [] # Liste pour stocker les réponses
+                    questions = []  # Liste pour stocker les questions
                     reponses = []  # Liste pour stocker les réponses générées pour chaque question
 
                     try:
@@ -197,43 +197,81 @@ try:
                                 questions.append(question_text)
 
                         if questions:
-                            print("-----------gQuestions trouvées :")
+                            print("-----------Questions trouvées :")
                             for idx, q in enumerate(questions, 1):
                                 print(f"{idx}. {q}")
 
                             # Générer les réponses GPT pour chaque question
                             for idx, question in enumerate(questions):
                                 # Appel de la fonction pour générer la réponse GPT pour chaque question
-                                response = generer_reponses(cv,
-                                                            promptGpt,question)  # Assurez-vous que cette fonction génère une réponse pour chaque question
+                                response = generer_reponses(cv, promptGpt,
+                                                            question)  # Assurez-vous que cette fonction génère une réponse pour chaque question
                                 reponses.append(response)  # Stocker la réponse générée
 
                                 print(f"Réponse générée pour la question {idx} : {response}")
 
-                            # Remplir les zones de texte avec les réponses générées
-                            for idx, response in enumerate(reponses):
-                                WebDriverWait(driver, 10).until(
-                                    EC.visibility_of_element_located((By.XPATH,
-                                                                      f"//label[contains(text(), '{questions[idx]}')]/ancestor::div[1]//input[contains(@class, ' artdeco-text-input--input')]"))
-                                )
-                                # Trouver la zone de texte correspondante à la question
-                                input_field = driver.find_elements(By.XPATH,
-                                                                   f"//label[contains(text(), '{questions[idx]}')]/ancestor::div[1]//input[@class=' artdeco-text-input--input']")
-                                if input_field:
-                                    input_field[idx].click()
-                                    input_field[idx].send_keys(Keys.BACKSPACE)
-                                    input_field[idx].send_keys(Keys.CONTROL + "a")
-                                    input_field[idx].send_keys(response)  # Remplir la zone de texte avec la réponse générée
-                                    print(f"Réponse insérée pour la question {idx + 1}: {questions[idx]}")
-                                else:
-                                    print(f"Zone de texte non trouvée pour la question {idx + 1}: {questions[idx]}")
+                            # Remplir les zones de texte ou sélectionner les boutons radio avec les réponses générées
+                            for idx, question in enumerate(questions):
+                                try:
+                                    # Vérifier si la question a des boutons radio
+                                    radio_buttons = driver.find_elements(By.XPATH,
+                                                                         f"//label[contains(text(), '{question}')]/ancestor::div[1]//input[@type='radio']")
+
+                                    if radio_buttons:  # Si des boutons radio sont présents
+                                        print(f"Des boutons radio ont été trouvés pour la question {question}")
+                                        # Sélectionner la première option radio disponible (par exemple)
+                                        for radio in radio_buttons:
+                                            if not radio.is_selected():  # Si le bouton radio n'est pas déjà sélectionné
+                                                radio.click()
+                                                print(f"Option sélectionnée pour la question: {question}")
+                                                break  # Sélectionner uniquement la première option
+
+                                    else:  # Si ce n'est pas un bouton radio, alors c'est un champ de texte
+                                        WebDriverWait(driver, 30).until(
+                                            EC.element_to_be_clickable((By.XPATH,
+                                                                        f"//label[contains(text(), '{questions[idx]}')]/ancestor::div[1]//input[contains(@class, 'artdeco-text-input--input')]"))
+                                        )
+
+                                        # Trouver la zone de texte correspondante à la question
+                                        input_field = driver.find_element(By.XPATH,
+                                                                          f"//label[contains(text(), '{questions[idx]}')]/ancestor::div[1]//input[contains(@class, 'artdeco-text-input--input')]")
+
+                                        input_field.click()
+                                        input_field.send_keys(Keys.BACKSPACE)
+                                        input_field.send_keys(Keys.CONTROL + "a")
+                                        input_field.send_keys(
+                                            reponses[idx])  # Remplir la zone de texte avec la réponse générée
+                                        print(f"Réponse insérée pour la question {idx + 1}: {questions[idx]}")
+
+                                except TimeoutException:
+                                    print(
+                                        f"Le champ de texte ou les boutons radio pour la question {idx + 1} ne sont pas prêts.")
+                                except Exception as e:
+                                    print(f"Une erreur est survenue lors du remplissage de la question {idx + 1}: {e}")
+
                         else:
                             print("Aucune question détectée.")
 
                     except TimeoutException:
                         print("Les questions ne se sont pas chargées à temps.")
 
-                    time.sleep(50)
+                    try:
+                        # Attendre que le bouton "Terminé" soit visible et cliquable
+                        WebDriverWait(driver, 20).until(
+                            EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Terminé')]"))
+                        )
+
+                        # Trouver le bouton "Terminé" et cliquer dessus
+                        termine_button = driver.find_element(By.XPATH, "//span[contains(text(), 'Terminé')]")
+                        termine_button.click()
+                        print("Candidature terminée et envoyée.")
+
+                    except TimeoutException:
+                        print("Le bouton 'Terminé' n'est pas devenu cliquable à temps.")
+                    except Exception as e:
+                        print(f"Une erreur est survenue lors du clic sur le bouton 'Terminé' : {e}")
+
+                    time.sleep(10)
 
                     try:
                         verify_button = WebDriverWait(driver, 20).until(
@@ -270,7 +308,7 @@ try:
                     print("Impossible de fermer le pop-up.")
 
                 # On réactive le scroll de la page
-                enable_scroll()
+                # enable_scroll()
 
                 # Attendre que le pop-up disparaisse
                 WebDriverWait(driver, 10).until(

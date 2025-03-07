@@ -22,5 +22,5 @@ Ce projet automatise le processus de candidature aux offres d'emploi sur LinkedI
 
 ```bash
 git clone https://github.com/RatovosonPascal/Linkedin_Apply_Selenium_python/tree/dev
-cd linkedin-autoapply-bot
+cd selenium_python
 pip install -r requirements.txt
