@@ -1,0 +1,4 @@
+selenium==4.7.0
+g4f==0.4.7.4
+python-dotenv
+webdriver-manager

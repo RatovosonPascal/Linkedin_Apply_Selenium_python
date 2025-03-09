@@ -2,13 +2,31 @@ import random
 import time
 from selenium import webdriver
 from selenium.common import NoSuchElementException, TimeoutException
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 import os
+
+from webdriver_manager.chrome import ChromeDriverManager
+
 from gpt4free import generer_reponses
+
+# Configuration des options pour Chrome
+chrome_options = Options()
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+#chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+
+service = Service(ChromeDriverManager().install())
+
+# Créer le WebDriver
+driver = webdriver.Chrome(service=service, options=chrome_options)
+
 
 load_dotenv()
 
@@ -21,7 +39,7 @@ with open("cv.txt", "r", encoding="utf-8") as file:
 promptGpt = "je vais vous demander de me donner la reponse exact juste avec un chiffre, pas de phrase, les questions entre accolade suivant en tennant compte du CV après"
 
 
-driver = webdriver.Chrome()
+
 
 
 def disable_scroll():
@@ -52,7 +70,7 @@ try:
 
 
 
-    # Essayer de fermer l'alerte si elle existe
+    # fermer l'alerte si elle existe
     try:
         alert_button = driver.find_element(By.XPATH,
                                            "//*[@id='artdeco-global-alert-container']/div/section/div/div[2]/button[2]")
@@ -73,9 +91,9 @@ try:
     driver.find_element(By.CSS_SELECTOR, "button.btn__primary--large.from__button--floating").click()
 
     time.sleep(random.randint(2, 4))
+
     # Attente pour vérifier la connexion
     print(driver.current_url)
-    print(driver.page_source[:500])  # Affiche les 500 premiers caractères du HTML
 
     print("Recherche d'un poste...")
     search_box = WebDriverWait(driver, 10).until(
